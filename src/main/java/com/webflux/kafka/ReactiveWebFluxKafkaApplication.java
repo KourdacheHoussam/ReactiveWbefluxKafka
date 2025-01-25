@@ -4,10 +4,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class ReactiveWebfluxKafkaApplication {
+public class ReactiveWebFluxKafkaApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(ReactiveWebfluxKafkaApplication.class, args);
+		SpringApplication.run(ReactiveWebFluxKafkaApplication.class, args);
 	}
 
 }

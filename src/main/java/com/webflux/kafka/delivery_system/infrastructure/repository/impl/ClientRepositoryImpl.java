@@ -5,7 +5,8 @@ import com.webflux.kafka.delivery_system.entity.Order;
 import com.webflux.kafka.delivery_system.infrastructure.repository.dao.ClientDAO;
 import com.webflux.kafka.delivery_system.infrastructure.repository.dao.OrderDAO;
 import com.webflux.kafka.delivery_system.repository.ClientRepository;
-import lombok.extern.log4j.Log4j2;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -18,9 +19,8 @@ import java.util.List;
  * @author : Houssam KOURDACHE
  */
 @Repository
-@Log4j2
 public class ClientRepositoryImpl implements ClientRepository {
-
+    private static final Logger log = LoggerFactory.getLogger(ClientRepositoryImpl.class);
     private final ClientDAO clientDAO;
     private final OrderDAO orderDAO;
 
@@ -37,17 +37,24 @@ public class ClientRepositoryImpl implements ClientRepository {
 
     @Override
     public Mono<Client> getClient(String id) {
-        return null;
+        return clientDAO.findById(id);
     }
 
     @Override
-    public Flux<Client> allClient() {
-        return clientDAO.findAll();
+    public Flux<Client> allClients() {
+        return clientDAO.findAll()
+                .limitRate(100)
+                .doOnError(e -> log.error("Error during fetching clients list"))
+                .doOnComplete(() -> log.info("List of client is fetched completely"))
+                .delayElements(Duration.ofMillis(1000))
+                .log();
     }
 
     @Override
     public Mono<Void> deleteClient(String clientId) {
-        return clientDAO.deleteById(clientId);
+        return clientDAO.findById(clientId)
+                .switchIfEmpty(Mono.defer(() -> Mono.error(new RuntimeException("Client with id not exist"))))
+                .then( clientDAO.deleteById(clientId));
     }
 
     @Override
@@ -56,10 +63,10 @@ public class ClientRepositoryImpl implements ClientRepository {
         return Flux.fromIterable(clientsListId)
                 .buffer(BUFFER_SIZE) // split the deletion to smaller list of elements to delete
                 .flatMap(listIdClientToDelete ->
-                    clientDAO.deleteAllById(listIdClientToDelete) // delete a chunk of clients
-                            .thenMany(Flux.fromIterable(listIdClientToDelete))
-                    // make sure to return deleted elements ids
-                    // because deleteAllById() return Mono<Void>, so...
+                                clientDAO.deleteAllById(listIdClientToDelete) // delete a chunk of clients
+                                        .thenMany(Flux.fromIterable(listIdClientToDelete))
+                        // make sure to return deleted elements ids
+                        // because deleteAllById() return Mono<Void>, so...
                 )
                 .delayElements(Duration.ofMillis(500)); //
     }

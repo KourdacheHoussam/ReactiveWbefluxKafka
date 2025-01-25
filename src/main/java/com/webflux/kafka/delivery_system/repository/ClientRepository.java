@@ -16,7 +16,7 @@ public interface ClientRepository {
 
     Mono<Client> getClient(String id);
 
-    Flux<Client> allClient();
+    Flux<Client> allClients();
 
     Mono<Void> deleteClient(String clientId);
 

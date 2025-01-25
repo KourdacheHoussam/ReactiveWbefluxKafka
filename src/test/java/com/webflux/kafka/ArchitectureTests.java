@@ -3,13 +3,16 @@ package com.webflux.kafka;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.importer.ClassFileImporter;
 import com.tngtech.archunit.lang.ArchRule;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.relational.core.mapping.Table;
 import org.springframework.stereotype.Repository;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.*;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
+import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.methods;
 
 
 /**
@@ -32,7 +35,6 @@ public class ArchitectureTests {
     JavaClasses ENTITY_PACKAGE_CLASSES = new ClassFileImporter().importPackages(ENTITY_PACKAGE);
     JavaClasses REPO_PACKAGE_CLASSES = new ClassFileImporter().importPackages(REPO_PACKAGE);
     JavaClasses INFRA_PACKAGE_CLASSES = new ClassFileImporter().importPackages(INFRA_PACKAGE);
-
 
 
     @Test
@@ -66,22 +68,20 @@ public class ArchitectureTests {
     public void annotation_rest_controller_should_be_used_only_in_rest_package() {
         ArchRule rest_controller_annotation_rule = classes().that().areAnnotatedWith(RestController.class)
                 .should().resideInAPackage(REST_PACKAGE);
-        rest_controller_annotation_rule.check( new ClassFileImporter().importPackages(ROOT_PACKAGE));
+        rest_controller_annotation_rule.check(new ClassFileImporter().importPackages(ROOT_PACKAGE));
     }
 
     @Test
     public void annotation_repository_should_be_used_only_in_infra_package() {
         ArchRule rest_controller_annotation_rule = classes().that().areAnnotatedWith(Repository.class)
                 .should().resideInAPackage(INFRA_PACKAGE);
-        rest_controller_annotation_rule.check( new ClassFileImporter().importPackages(ROOT_PACKAGE));
+        rest_controller_annotation_rule.check(new ClassFileImporter().importPackages(ROOT_PACKAGE));
     }
 
     @Test
     public void annotation_document_table_should_reside_in_entity_package() {
         ArchRule document_table_annotation_rule = classes().that()
                 .areAnnotatedWith(Document.class)
-                .or()
-                .areAnnotatedWith(Table.class)
                 .should().resideInAPackage(ENTITY_PACKAGE);
         document_table_annotation_rule.check(new ClassFileImporter().importPackages(ROOT_PACKAGE));
     }
@@ -91,9 +91,41 @@ public class ArchitectureTests {
         ArchRule no_entities_in_rest_layer = classes()
                 .that().resideInAPackage(REST_PACKAGE)
                 .should().onlyAccessClassesThat()
-                .areNotAnnotatedWith(Document.class)
-                .andShould().onlyAccessClassesThat()
-                .areNotAnnotatedWith(Table.class);
+                .areNotAnnotatedWith(Document.class);
         no_entities_in_rest_layer.check(REST_PACKAGE_CLASSES);
+    }
+
+    @Test
+    public void infra_repository_package_should_contains_classes_annotated_repository() {
+        String rPackage = "com.webflux.kafka.delivery_system.infrastructure.repository.impl";
+        JavaClasses classes = new ClassFileImporter().importPackages(rPackage);
+        classes().that().resideInAPackage(rPackage).should().beAnnotatedWith(Repository.class).check(classes);
+    }
+
+    @Test
+    public void transactional_annotation_only_available_in_application_package() {
+        classes().that().areAnnotatedWith(Transactional.class).should()
+                .resideInAPackage("com.webflux.kafka.delivery_system.application.service")
+                .allowEmptyShould(true)
+                .check(new ClassFileImporter().importPackages(ROOT_PACKAGE));
+    }
+
+    @Test
+    public void swagger_documentation_mandatory_on_rest_methods() {
+        methods().that()
+                .areAnnotatedWith(GetMapping.class)
+                .or().areAnnotatedWith(PostMapping.class)
+                .or().areAnnotatedWith(DeleteMapping.class)
+                .or().areAnnotatedWith(PatchMapping.class)
+                .or().areAnnotatedWith(PutMapping.class)
+                .should().beAnnotatedWith(Operation.class)
+                .andShould().beAnnotatedWith(ApiResponses.class)
+                .check(REST_PACKAGE_CLASSES);
+    }
+
+    @Test
+    public void dto_object_should_be_records() {
+        classes().that().resideInAPackage("com.webflux.kafka.delivery_system.application.dto")
+                .should().beRecords().check(APP_PACKAGE_CLASSES);
     }
 }
