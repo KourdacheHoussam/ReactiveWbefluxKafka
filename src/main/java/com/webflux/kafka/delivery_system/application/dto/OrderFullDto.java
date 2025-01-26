@@ -8,5 +8,5 @@ import java.util.List;
 /**
  * @author : Houssam KOURDACHE
  */
-public record OrderFullDto(String id, String clientId, List<ProductFullDto> productFullDtos, OrderStatus status) {
+public record OrderFullDto(String id, String clientId, List<ProductFullDto> products, OrderStatus status) {
 }

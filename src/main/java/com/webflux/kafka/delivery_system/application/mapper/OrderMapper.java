@@ -1,9 +1,11 @@
 package com.webflux.kafka.delivery_system.application.mapper;
 
-import com.webflux.kafka.delivery_system.application.dto.ProductFullDto;
-import com.webflux.kafka.delivery_system.application.dto.ProductLightDto;
-import com.webflux.kafka.delivery_system.entity.Product;
+import com.webflux.kafka.delivery_system.application.dto.OrderFullDto;
+import com.webflux.kafka.delivery_system.application.dto.OrderLightDto;
+import com.webflux.kafka.delivery_system.entity.Order;
 import org.mapstruct.Mapper;
+
+import java.util.List;
 
 /**
  * @author : Houssam KOURDACHE
@@ -11,8 +13,13 @@ import org.mapstruct.Mapper;
 @Mapper(componentModel = "spring")
 public interface OrderMapper {
 
-    ProductFullDto toFullDto(Product product);
-    ProductLightDto toLightDto(Product product);
-    Product lightToEntity(ProductLightDto lightDto);
-    Product fullToEntity(ProductFullDto fullDto);
+    OrderFullDto toFullDto(Order order);
+
+    List<OrderFullDto> toListFullDto(List<Order> orders);
+
+    OrderLightDto toLightDto(Order order);
+
+    Order lightToEntity(OrderLightDto orderLightDto);
+
+    Order fullToEntity(OrderFullDto orderFullDto);
 }

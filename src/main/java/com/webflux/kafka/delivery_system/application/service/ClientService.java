@@ -2,13 +2,18 @@ package com.webflux.kafka.delivery_system.application.service;
 
 import com.webflux.kafka.delivery_system.application.dto.ClientFullDto;
 import com.webflux.kafka.delivery_system.application.dto.ClientLightDto;
+import com.webflux.kafka.delivery_system.application.dto.ClientOrdersDto;
 import com.webflux.kafka.delivery_system.application.mapper.ClientMapper;
+import com.webflux.kafka.delivery_system.application.mapper.OrderMapper;
 import com.webflux.kafka.delivery_system.repository.ClientRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.time.Duration;
+import java.util.List;
 
 /**
  * @author : Houssam KOURDACHE
@@ -19,10 +24,12 @@ public class ClientService {
 
     private final ClientRepository clientRepository;
     private final ClientMapper clientMapper;
+    private final OrderMapper orderMapper;
 
-    public ClientService(ClientRepository clientRepository, ClientMapper clientMapper) {
+    public ClientService(ClientRepository clientRepository, ClientMapper clientMapper, OrderMapper orderMapper) {
         this.clientRepository = clientRepository;
         this.clientMapper = clientMapper;
+        this.orderMapper = orderMapper;
     }
 
     public Mono<ClientFullDto> getClient(String clientID) {
@@ -51,5 +58,21 @@ public class ClientService {
                     log.error("Error while deleting client with id {}", clientId, throwable);
                     return Mono.just(false);
                 });
+    }
+
+    public Flux<String> deleteClientsById(String[] clientIds) {
+        return Flux.fromIterable(List.of(clientIds))
+                .flatMap(s -> deleteClientById(s)
+                        .filter(deleted -> deleted)
+                        .map(aBoolean -> s))
+                .delayElements(Duration.ofMillis(200));
+    }
+
+    public Flux<ClientOrdersDto> getClientsOrders() {
+        return this.clientRepository.getClientsOrdersInfos()
+                .map(tuple ->
+                        ClientOrdersDto.builder()
+                                .client(clientMapper.clientToLightDto(tuple.getT1()))
+                                .orders(orderMapper.toListFullDto(tuple.getT2())).build());
     }
 }

@@ -22,5 +22,5 @@ public interface ClientRepository {
 
     Flux<String> deleteClients(List<String> clientsListId);
 
-    Mono<Tuple2<Client, List<Order>>> getClientOrdersInfos(String clientId);
+    Flux<Tuple2<Client, List<Order>>> getClientsOrdersInfos();
 }

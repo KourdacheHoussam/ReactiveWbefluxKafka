@@ -54,7 +54,7 @@ public class ClientRepositoryImpl implements ClientRepository {
     public Mono<Void> deleteClient(String clientId) {
         return clientDAO.findById(clientId)
                 .switchIfEmpty(Mono.defer(() -> Mono.error(new RuntimeException("Client with id not exist"))))
-                .then( clientDAO.deleteById(clientId));
+                .then(clientDAO.deleteById(clientId));
     }
 
     @Override
@@ -74,16 +74,20 @@ public class ClientRepositoryImpl implements ClientRepository {
     private Flux<Order> getClientOrders(String clientId) {
         // the rule of publish() in this method permit to publish toward multiple
         // subscribers, with taking to account the backpressure.
-        return orderDAO.findByClientId(clientId).publish().delayElements(Duration.ofMillis(100))
+        return orderDAO.findByClientId(clientId)
                 .doOnError(throwable -> new RuntimeException("Error occurred during publishing event"));
     }
 
     @Override
-    public Mono<Tuple2<Client, List<Order>>> getClientOrdersInfos(String clientId) {
-        return Mono.zip(
-                getClient(clientId).switchIfEmpty(Mono.error(new RuntimeException("Client not found"))),
-                getClientOrders(clientId).collectList() // Return empty list if no orders found
-        ).doOnError(e -> new RuntimeException("Error fetching client or orders for clientId: {}", e));
+    public Flux<Tuple2<Client, List<Order>>> getClientsOrdersInfos() {
+        return clientDAO.findAll()
+                .doOnNext(System.out::println)
+                .flatMap(client ->
+                        Mono.zip(
+                                getClient(client.id()).switchIfEmpty(Mono.error(new RuntimeException("Client not found"))),
+                                getClientOrders(client.id()).collectList())
+                );
+
 
     }
 }

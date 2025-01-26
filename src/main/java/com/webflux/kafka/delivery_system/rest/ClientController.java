@@ -2,22 +2,29 @@ package com.webflux.kafka.delivery_system.rest;
 
 import com.webflux.kafka.delivery_system.application.dto.ClientFullDto;
 import com.webflux.kafka.delivery_system.application.dto.ClientLightDto;
+import com.webflux.kafka.delivery_system.application.dto.ClientOrdersDto;
 import com.webflux.kafka.delivery_system.application.service.ClientService;
+import com.webflux.kafka.delivery_system.entity.Order;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author : Houssam KOURDACHE
  */
 @RestController
 @RequestMapping("/clients")
-@Tag(name = "CLIENT CRUD", description = "Manage client")
+@Tag(name = "Client CRUD operations", description = "Manage client and his orders")
 public class ClientController {
 
     private final ClientService clientService;
@@ -56,6 +63,21 @@ public class ClientController {
     @ApiResponses()
     public ResponseEntity<Mono<Boolean>> deleteClientById(@PathVariable("clientId") String clientId) {
         return ResponseEntity.ok(this.clientService.deleteClientById(clientId));
+    }
+
+    @DeleteMapping(value = "/delete/list")
+    @Operation(summary = "Delete a bunch of clients", description = "Receive a list of clients ids to " +
+            "delete, and return the list of deleted ids")
+    @ApiResponses()
+    public ResponseEntity<Flux<String>> deleteListOfClientByIds(@RequestParam("ClientIds") String [] clientIds) {
+        return ResponseEntity.accepted().body(this.clientService.deleteClientsById(clientIds));
+    }
+
+    @GetMapping(value = "/andOrders")
+    @Operation(summary="Clients orders", description = "Retrieve for each client his list of orders")
+    @ApiResponses()
+    public ResponseEntity<Flux<ClientOrdersDto>> clientsOrders() {
+        return ResponseEntity.ok(this.clientService.getClientsOrders());
     }
 
 }

@@ -9,5 +9,5 @@ import java.util.List;
  * @author : Houssam KOURDACHE
  */
 @Document("client")
-public record Client(@Id String id, String nom, String email, String address, List<Product> products) {
+public record Client(@Id String id, String nom, String email, String address, List<Order> orders) {
 }
