@@ -1,7 +1,5 @@
 package com.webflux.kafka.delivery_system.application.dto;
 
-import org.springframework.data.mongodb.core.mapping.Document;
-
 /**
  * @author : Houssam KOURDACHE
  */

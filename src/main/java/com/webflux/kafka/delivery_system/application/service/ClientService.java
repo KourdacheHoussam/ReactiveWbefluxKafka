@@ -71,8 +71,6 @@ public class ClientService {
     public Flux<ClientOrdersDto> getClientsOrders() {
         return this.clientRepository.getClientsOrdersInfos()
                 .map(tuple ->
-                        ClientOrdersDto.builder()
-                                .client(clientMapper.clientToLightDto(tuple.getT1()))
-                                .orders(orderMapper.toListFullDto(tuple.getT2())).build());
+                        new ClientOrdersDto(clientMapper.clientToLightDto(tuple.getT1()), orderMapper.toListFullDto(tuple.getT2())));
     }
 }

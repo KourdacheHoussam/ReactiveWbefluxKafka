@@ -1,0 +1,68 @@
+spring:
+  cloud:
+    function:
+      definition: processorBinding;multiplyNumber;createdOrder;createdClient;produceOrders
+    stream:
+      kafka:
+        binder:
+          autoCreateTopics: true
+      bindings:
+        # Producer and consumer commandline
+        #./kafka-console-consumer --bootstrap-server localhost:9092 --topic "processor-binding-topic-out" --from-beginning
+        #./kafka-console-producer --broker-list localhost:9092 --topic "processor-binding-topic-in"
+        processorBinding-in-0:
+          destination: processor-binding-topic-in
+        processorBinding-out-0:
+          destination: processor-binding-topic-out
+        # Producer and consumer commandline
+        #./kafka-console-consumer --bootstrap-server localhost:9092 --topic "multiply-number-topic-out" --from-beginning
+        #./kafka-console-producer --broker-list localhost:9092 --topic "multiply-number-topic-in"
+        multiplyNumber-in-0:
+          destination: multiply-number-topic-in
+        multiplyNumber-out-0:
+          destination: multiply-number-topic-out
+        # Producer and consumer commandline
+        #./kafka-console-consumer --bootstrap-server localhost:9092 --topic "created-order-topic-out" --from-beginning
+        #./kafka-console-producer --broker-list localhost:9092 --topic "created-order-topic-in"
+        createdOrder-in-0:
+          destination: created-order-topic-in
+          producer:
+            poller:
+              fixed-delay: 2000
+        createdOrder-out-0:
+          destination: created-order-topic-out
+        # Producer and consumer commandline
+        #./kafka-console-consumer --bootstrap-server localhost:9092 --topic "created-client-topic-out" --from-beginning
+        #./kafka-console-producer --broker-list localhost:9092 --topic "created-client-topic-in"
+        createdClient-in-0:
+          destination: created-client-topic-in
+        createdClient-out-0:
+          destination: created-client-topic-out
+        # Producer and consumer commandline
+        #./kafka-console-consumer --bootstrap-server localhost:9092 --topic "produce-orders-topic-out" --from-beginning
+        #./kafka-console-producer --broker-list localhost:9092 --topic "produce-orders-topic-in"
+        produceOrders-in-0:
+          destination: produce-orders-topic-in
+        produceOrders-out-0:
+          destination: produce-orders-topic-out
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+  show-actuator: true
+
+validators:
+  client:
+    name:
+      mandatory: The name of client is mandatory
+
+
+
+
+
+
+
+
+

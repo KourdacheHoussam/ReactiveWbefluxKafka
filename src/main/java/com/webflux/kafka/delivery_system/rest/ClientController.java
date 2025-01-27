@@ -4,33 +4,33 @@ import com.webflux.kafka.delivery_system.application.dto.ClientFullDto;
 import com.webflux.kafka.delivery_system.application.dto.ClientLightDto;
 import com.webflux.kafka.delivery_system.application.dto.ClientOrdersDto;
 import com.webflux.kafka.delivery_system.application.service.ClientService;
-import com.webflux.kafka.delivery_system.entity.Order;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
+import jakarta.validation.Valid;
+import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
-import java.util.Map;
-
 /**
  * @author : Houssam KOURDACHE
  */
+@Validated
 @RestController
 @RequestMapping("/clients")
 @Tag(name = "Client CRUD operations", description = "Manage client and his orders")
 public class ClientController {
 
     private final ClientService clientService;
+    private final StreamBridge streamBridge;
 
-    public ClientController(ClientService clientService) {
+    public ClientController(ClientService clientService, StreamBridge streamBridge) {
         this.clientService = clientService;
+        this.streamBridge = streamBridge;
     }
 
     @GetMapping("/{clientId}")
@@ -47,7 +47,7 @@ public class ClientController {
     @PostMapping("/add")
     @Operation(summary = "Add a new client", description = "Mandatory client information, nom and email")
     @ApiResponses()
-    public ResponseEntity<Mono<ClientFullDto>> createClient(@RequestBody ClientLightDto clientLightDto) {
+    public ResponseEntity<Mono<ClientFullDto>> createClient(@Valid @RequestBody ClientLightDto clientLightDto) {
         return ResponseEntity.ok(clientService.createClient(clientLightDto));
     }
 
@@ -69,15 +69,22 @@ public class ClientController {
     @Operation(summary = "Delete a bunch of clients", description = "Receive a list of clients ids to " +
             "delete, and return the list of deleted ids")
     @ApiResponses()
-    public ResponseEntity<Flux<String>> deleteListOfClientByIds(@RequestParam("ClientIds") String [] clientIds) {
+    public ResponseEntity<Flux<String>> deleteListOfClientByIds(@RequestParam("ClientIds") String[] clientIds) {
         return ResponseEntity.accepted().body(this.clientService.deleteClientsById(clientIds));
     }
 
     @GetMapping(value = "/andOrders")
-    @Operation(summary="Clients orders", description = "Retrieve for each client his list of orders")
+    @Operation(summary = "Clients orders", description = "Retrieve for each client his list of orders")
     @ApiResponses()
     public ResponseEntity<Flux<ClientOrdersDto>> clientsOrders() {
         return ResponseEntity.ok(this.clientService.getClientsOrders());
     }
 
+    @PostMapping("/publish")
+    @Operation(summary = "Publish a client to a topic: created-order-topic-in")
+    @ApiResponses()
+    public String publishCreatedClient(@RequestBody ClientFullDto clientFullDto) {
+        streamBridge.send("created-client-topic-in", clientFullDto);
+        return "New client published successfully";
+    }
 }

@@ -10,6 +10,8 @@ import reactor.core.publisher.Mono;
 public interface OrderRepository {
     Mono<Order> createOrder(Order order);
 
+    Flux<Order> findByClientId(String clientId);
+
     Flux<Order> allOrders();
 
     Mono<Order> updateOrder(Order order);

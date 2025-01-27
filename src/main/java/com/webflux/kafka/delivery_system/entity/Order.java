@@ -1,6 +1,5 @@
 package com.webflux.kafka.delivery_system.entity;
 
-import lombok.NoArgsConstructor;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;

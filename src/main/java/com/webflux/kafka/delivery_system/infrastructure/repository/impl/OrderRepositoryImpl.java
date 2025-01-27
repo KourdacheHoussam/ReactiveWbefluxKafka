@@ -25,6 +25,11 @@ public class OrderRepositoryImpl implements OrderRepository {
     }
 
     @Override
+    public Flux<Order> findByClientId(String clientId) {
+        return orderDAO.findByClientId(clientId);
+    }
+
+    @Override
     public Flux<Order> allOrders() {
         return null;
     }

@@ -42,7 +42,10 @@ public class ArchitectureTests {
         ArchRule api_application_access_rule =
                 classes().that().resideInAPackage(REST_PACKAGE)
                         .should().onlyAccessClassesThat()
-                        .resideInAnyPackage(APP_PACKAGE, SPRING_PACKAGE, JAVA_PACKAGE)
+                        .resideInAnyPackage(APP_PACKAGE,
+                                SPRING_PACKAGE,
+                                JAVA_PACKAGE,
+                                "org.springframework.cloud..")
                         .allowEmptyShould(true);
         api_application_access_rule.check(REST_PACKAGE_CLASSES);
     }
