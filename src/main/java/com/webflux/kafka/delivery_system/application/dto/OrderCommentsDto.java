@@ -3,7 +3,7 @@ package com.webflux.kafka.delivery_system.application.dto;
 import java.util.List;
 
 /**
- *
  * @author : Houssam KOURDACHE
  */
-public record ClientOrdersDto(ClientLightDto client, List<OrderFullDto> orders) {}
+public record OrderCommentsDto(OrderLightDto order, List<CommentDto> comments) {
+}

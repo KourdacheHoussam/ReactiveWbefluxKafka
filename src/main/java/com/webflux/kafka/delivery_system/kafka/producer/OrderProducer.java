@@ -9,6 +9,7 @@ import reactor.core.publisher.Sinks;
 
 import java.time.Duration;
 import java.util.Collections;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 
@@ -46,7 +47,7 @@ public class OrderProducer {
         long orderId = counter.incrementAndGet();
         // Create and populate your OrderFullDto here
         OrderFullDto or =  new OrderFullDto(
-                String.valueOf(orderId),
+                UUID.randomUUID().toString(),
                 "Client" + orderId,
                 Collections.emptyList(),  // Assuming no products for this example
                 OrderStatus.CREATED

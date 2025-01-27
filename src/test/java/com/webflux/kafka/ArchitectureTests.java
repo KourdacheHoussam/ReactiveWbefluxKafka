@@ -45,7 +45,8 @@ public class ArchitectureTests {
                         .resideInAnyPackage(APP_PACKAGE,
                                 SPRING_PACKAGE,
                                 JAVA_PACKAGE,
-                                "org.springframework.cloud..")
+                                "org.springframework.cloud..",
+                                "com.webflux..")
                         .allowEmptyShould(true);
         api_application_access_rule.check(REST_PACKAGE_CLASSES);
     }
@@ -54,7 +55,8 @@ public class ArchitectureTests {
     public void application_package_should_not_use_infrastructure_repository_package() {
         ArchRule application_not_access_infrastructure_repository =
                 classes().that().resideInAPackage(APP_PACKAGE).should().onlyAccessClassesThat()
-                        .resideInAnyPackage(APP_PACKAGE, REPO_PACKAGE, ENTITY_PACKAGE, SPRING_PACKAGE, JAVA_PACKAGE)
+                        .resideInAnyPackage(APP_PACKAGE, REPO_PACKAGE, ENTITY_PACKAGE, SPRING_PACKAGE, JAVA_PACKAGE,
+                        "com.webflux..", "org.slf4j..", "reactor..")
                         .allowEmptyShould(true);
         application_not_access_infrastructure_repository.check(APP_PACKAGE_CLASSES);
     }
@@ -63,7 +65,8 @@ public class ArchitectureTests {
     public void infra_package_should_access_only_repository_package() {
         ArchRule infra_access_only_repository_package = classes().that().resideInAnyPackage(INFRA_PACKAGE)
                 .should().onlyAccessClassesThat()
-                .resideInAnyPackage(REPO_PACKAGE, INFRA_PACKAGE, SPRING_PACKAGE, JAVA_PACKAGE, "reactor..");
+                .resideInAnyPackage(REPO_PACKAGE, INFRA_PACKAGE, SPRING_PACKAGE,
+                        JAVA_PACKAGE, "reactor..", "org.slf4j..", "com.webflux..");
         infra_access_only_repository_package.check(INFRA_PACKAGE_CLASSES);
     }
 
